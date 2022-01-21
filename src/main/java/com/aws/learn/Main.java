@@ -9,8 +9,10 @@ public class Main {
         if (messages.size() > 0 ) {
             service.deleteMessagesFromDb(messages);
             service.deleteMessageFromChime(messages);
+            System.out.println(messages.size() + " messages was deleted successes");
             return messages.size() + " messages was deleted successes";
         }
+        System.out.println("No expired messages");
         return  "No expired messages";
     }
 }
