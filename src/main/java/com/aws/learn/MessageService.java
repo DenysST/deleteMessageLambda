@@ -13,7 +13,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-public class MessageDao {
+public class MessageService {
     public List<Message> getAll(int days) {
         String query = "SELECT * " +
                 "FROM messages " +
@@ -26,27 +26,6 @@ public class MessageDao {
                      connection.prepareStatement(query)) {
             Timestamp timestamp = new Timestamp(checkDate.getTime());
             getMessages.setTimestamp(1, timestamp);
-            ResultSet resultSet = getMessages.executeQuery();
-            while (resultSet.next()) {
-                Message message = createMessage(resultSet);
-                allMessages.add(message);
-            }
-        } catch (SQLException throwables) {
-            throw new RuntimeException("Can't get messages from db", throwables);
-        }
-        return allMessages;
-    }
-
-    public List<Message> getAllByChannel(String arn) {
-        String query = "SELECT * " +
-                "FROM messages " +
-                "JOIN channels c on c.id = messages.channel_id " +
-                "WHERE c.channel_arn = ?";
-        List<Message> allMessages = new ArrayList<>();
-        try (Connection connection = ConnectionUtil.getConnection();
-             PreparedStatement getMessages =
-                     connection.prepareStatement(query)) {
-            getMessages.setString(1, arn);
             ResultSet resultSet = getMessages.executeQuery();
             while (resultSet.next()) {
                 Message message = createMessage(resultSet);
@@ -71,11 +50,11 @@ public class MessageDao {
 
     public void deleteMessageFromChime(List<Message> messages) {
         ChimeClient client = AmazonChimeService.getClient();
-        for (Message message : messages) {
+        for (Message message : messages) { // I know loop isn't the best way, but I don't find other decision
             client.deleteChannelMessage(DeleteChannelMessageRequest.builder()
                     .channelArn(message.getChannelArn())
                     .messageId(message.getMessage_id())
-                    .chimeBearer("arn:aws:chime:us-east-1:105664884736:app-instance/7a19f1c4-e930-4908-8569-021411b4d377/user/8165")
+                    .chimeBearer("")
                     .build());
         }
     }
@@ -107,7 +86,7 @@ public class MessageDao {
     public static Date addDays(Date date, int days) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
-        cal.add(Calendar.DATE, days); //minus number would decrement the days
+        cal.add(Calendar.DATE, days * -1); //minus number would decrement the days
         return cal.getTime();
     }
 }
