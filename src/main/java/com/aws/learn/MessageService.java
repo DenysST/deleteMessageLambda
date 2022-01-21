@@ -1,5 +1,6 @@
 package com.aws.learn;
 
+import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.services.chime.ChimeClient;
 import software.amazon.awssdk.services.chime.model.DeleteChannelMessageRequest;
 
@@ -51,11 +52,15 @@ public class MessageService {
     public void deleteMessageFromChime(List<Message> messages) {
         ChimeClient client = AmazonChimeService.getClient();
         for (Message message : messages) { // I know loop isn't the best way, but I don't find other decision
-            client.deleteChannelMessage(DeleteChannelMessageRequest.builder()
-                    .channelArn(message.getChannelArn())
-                    .messageId(message.getMessage_id())
-                    .chimeBearer("")
-                    .build());
+           try {
+               client.deleteChannelMessage(DeleteChannelMessageRequest.builder()
+                       .channelArn(message.getChannelArn())
+                       .messageId(message.getMessage_id())
+                       .chimeBearer("")
+                       .build());
+           } catch (SdkException e) {
+               throw new RuntimeException("Error while delete message from chime", e);
+           }
         }
     }
     private String createDeleteQuery(List<Message> messages) {
