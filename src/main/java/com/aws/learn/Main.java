@@ -2,10 +2,9 @@ package com.aws.learn;
 
 import java.util.List;
 public class Main {
-
-    public String deleteExpiredMessages(int days) {
+    public String deleteExpiredMessages(InputModel input) {
         MessageService service = new MessageService();
-        List<Message> messages = service.getAll(days);
+        List<Message> messages = service.getAll(Integer.parseInt(input.getDays()));
         if (messages.size() > 0 ) {
             service.deleteMessagesFromDb(messages);
             service.deleteMessageFromChime(messages);
